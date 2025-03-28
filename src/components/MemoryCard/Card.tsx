@@ -1,10 +1,18 @@
 import styled from "styled-components";
 
-export interface CardProps {
+import ICard from "../../types/card";
+import { ComponentPropsWithoutRef } from "react";
+
+export interface CardProps extends ComponentPropsWithoutRef<"button"> {
+  card: ICard;
   revealed?: boolean;
 }
 
-export default function Card({ revealed = false }: CardProps) {
+export default function Card({
+  card,
+  revealed = false,
+  ...delegated
+}: CardProps) {
   const cardStyle = {
     transition: revealed
       ? "var(--hover-in-transition)"
@@ -22,25 +30,22 @@ export default function Card({ revealed = false }: CardProps) {
   } as React.CSSProperties;
 
   return (
-    <Container>
+    <Container {...delegated}>
       <CardBack style={backCardStyle} />
       <CardFront style={frontCardStyle}>
         <ImageWrapper>
-          <Image src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" />
+          <Image src={card.imageUrl} />
         </ImageWrapper>
         <CardInfo>
-          <Title>Some title</Title>
-          <Description>
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Suscipit,
-            et ipsam neque laudantium modi rem!
-          </Description>
+          <Title>{card.title}</Title>
+          {card.description && <Description>{card.description}</Description>}
         </CardInfo>
       </CardFront>
     </Container>
   );
 }
 
-const Container = styled.article`
+const Container = styled.button`
   --hover-in-transition: transform 350ms ease-out, box-shadow 350ms ease-out;
   --hover-out-transition: transform 700ms ease-out, box-shadow 700ms ease-out;
 
@@ -48,6 +53,20 @@ const Container = styled.article`
   position: relative;
   will-change: transform;
   transform-style: preserve-3d;
+  transform: translateX(0dvw);
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active,
+  &:not(:disabled):focus {
+    outline: 4px solid var(--THEME_COLOR_04);
+    outline-style: dashed;
+  }
 `;
 
 const CardFront = styled.div`
@@ -66,7 +85,11 @@ const CardFront = styled.div`
   box-shadow: var(--SHADOW_ELEVATION_MEDIUM);
   transition: var(--hover-in-transition);
 
-  ${Container}:hover & {
+  ${Container}:disabled & {
+    filter: grayscale(1) brightness(1.2);
+  }
+
+  ${Container}:not(:disabled):hover & {
     transform: var(--rotate) translateY(3px) scale(1.05);
     box-shadow: var(--SHADOW_ELEVATION_HIGH);
   }
@@ -96,8 +119,12 @@ const CardBack = styled.div`
   box-shadow: var(--SHADOW_ELEVATION_MEDIUM);
   background-color: var(--THEME_COLOR_03);
   transition: var(--hover-in-transition);
+  
+  ${Container}:disabled & {
+    filter: grayscale(1) brightness(1.2);
+  }
 
-  ${Container}:hover & {
+  ${Container}:not(:disabled):hover & {
     transform: var(--rotate) translateY(3px) scale(1.05);
     box-shadow: var(--SHADOW_ELEVATION_HIGH);
   }
