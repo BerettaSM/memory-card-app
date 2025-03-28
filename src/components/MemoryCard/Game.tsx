@@ -82,6 +82,7 @@ const Container = styled.main`
   background-color: var(--THEME_COLOR_01);
   box-shadow: var(--SHADOW_INSET_ELEVATION_HIGH);
   border-radius: 8px;
+  flex: 1;
 `;
 
 const CardContainer = styled.section`
