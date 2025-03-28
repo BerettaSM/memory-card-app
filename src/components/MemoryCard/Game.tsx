@@ -30,7 +30,7 @@ const cards: Card[] = [
 ];
 
 export default function Game() {
-  const { score } = useMemoryCardGame();
+  const { score, chooseCard } = useMemoryCardGame();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [cardsStatus, setCardsStatus] = useState<
     "entering" | "mounted" | "exiting"
