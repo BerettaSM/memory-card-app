@@ -1,35 +1,40 @@
-import { type PropsWithChildren, useCallback, useRef } from "react";
+import { type PropsWithChildren, useCallback, useRef, useState } from "react";
 import { MemoryCardGameContext } from "../context/MemoryCardGameContext";
 import useLocalStorage from "../hooks/use-local-storage";
 
 export function MemoryCardGameContextProvider({ children }: PropsWithChildren) {
-  const { storage: score, updateLocalStorage } = useLocalStorage<{
-    best: number;
-    current: number;
-  }>("@GAME_SCORE", {
-    best: 0,
-    current: 0,
-  });
+  const { storage: bestScore, updateLocalStorage } = useLocalStorage<number>(
+    "@BEST_SCORE",
+    0,
+  );
+
+  const [currentScore, setCurrentScore] = useState(0);
 
   const chosenCards = useRef<Set<string>>(new Set());
 
   const chooseCard = useCallback(
     (identifier: string) => {
-      const updatedScore = { ...score };
       if (chosenCards.current.has(identifier)) {
         chosenCards.current.clear();
       } else {
         chosenCards.current.add(identifier);
       }
-      updatedScore.current = chosenCards.current.size;
-      updatedScore.best = Math.max(updatedScore.best, updatedScore.current);
-      updateLocalStorage(updatedScore);
-      return updatedScore.current !== 0;
+      const newCurrentScore = chosenCards.current.size;
+      const newBestScore = Math.max(bestScore, newCurrentScore);
+      setCurrentScore(newCurrentScore);
+      updateLocalStorage(newBestScore);
+      return newCurrentScore !== 0;
     },
-    [score, updateLocalStorage],
+    [bestScore, updateLocalStorage],
   );
 
-  const context = { score, chooseCard };
+  const context = {
+    score: {
+      current: currentScore,
+      best: bestScore,
+    },
+    chooseCard,
+  };
 
   return (
     <MemoryCardGameContext.Provider value={context}>
