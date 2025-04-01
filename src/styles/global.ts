@@ -107,10 +107,14 @@ export const GlobalStyle = createGlobalStyle`
         isolation: isolate;
     }
 
-    @media print {
-        @page {
-            margin-top: 0;
-            margin-bottom: 0;
+    @keyframes blink {
+        0%, 100% {
+            color: currentColor;
+            border-color: currentColor;
+        }
+        80% {
+            color: var(--color);
+            border-color: var(--color);
         }
     }
 `;

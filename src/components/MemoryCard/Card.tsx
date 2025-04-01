@@ -1,7 +1,7 @@
 import styled from "styled-components";
-
-import ICard from "../../types/card";
 import { ComponentPropsWithoutRef } from "react";
+
+import type { Card as ICard } from "../../types";
 
 export interface CardProps extends ComponentPropsWithoutRef<"button"> {
   card: ICard;
@@ -46,8 +46,13 @@ export default function Card({
 }
 
 const Container = styled.button`
+  --index: 0;
+  --transition-delay: 500ms;
   --hover-in-transition: transform 350ms ease-out, box-shadow 350ms ease-out;
   --hover-out-transition: transform 700ms ease-out, box-shadow 700ms ease-out;
+
+  --card-transition: transform calc(var(--transition-delay) + 100ms * var(--index))
+    ease-in-out;
 
   cursor: pointer;
   position: relative;
@@ -85,10 +90,6 @@ const CardFront = styled.div`
   box-shadow: var(--SHADOW_ELEVATION_MEDIUM);
   transition: var(--hover-in-transition);
 
-  ${Container}:disabled & {
-    filter: grayscale(1) brightness(1.2);
-  }
-
   ${Container}:not(:disabled):hover & {
     transform: var(--rotate) translateY(3px) scale(1.05);
     box-shadow: var(--SHADOW_ELEVATION_HIGH);
@@ -119,10 +120,6 @@ const CardBack = styled.div`
   box-shadow: var(--SHADOW_ELEVATION_MEDIUM);
   background-color: var(--THEME_COLOR_03);
   transition: var(--hover-in-transition);
-  
-  ${Container}:disabled & {
-    filter: grayscale(1) brightness(1.2);
-  }
 
   ${Container}:not(:disabled):hover & {
     transform: var(--rotate) translateY(3px) scale(1.05);

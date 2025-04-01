@@ -17,6 +17,7 @@ const Container = styled.header`
   flex-grow: 0;
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 16px;
 `;
 
