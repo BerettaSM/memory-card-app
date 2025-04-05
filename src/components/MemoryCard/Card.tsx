@@ -161,6 +161,7 @@ const CardInfo = styled.section`
 
 const Title = styled.h3`
   text-align: center;
+  text-transform: capitalize;
 `;
 
 const Description = styled.p`

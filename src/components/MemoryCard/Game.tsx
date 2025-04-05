@@ -4,41 +4,16 @@ import styled from "styled-components";
 import { MemoryCard } from ".";
 import { Card, Transition } from "../../types";
 import useMemoryCardGame from "../../hooks/use-memory-card-game";
-
-const cards: Card[] = [
-  {
-    id: 'c1',
-    title: "ditto",
-    description:
-      "LLorem ipsum dolor, sit amet consectetur adipisicing elit. Suscipit, et ipsam neque laudantium modi rem!",
-    imageUrl:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png",
-  },
-  {
-    id: 'c2',
-    title: "bulbasaur",
-    description:
-      "LLorem ipsum dolor, sit amet consectetur adipisicing elit. Suscipit, et ipsam neque laudantium modi rem!",
-    imageUrl:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-  },
-  {
-    id: 'c3',
-    title: "ivysaur",
-    description:
-      "LLorem ipsum dolor, sit amet consectetur adipisicing elit. Suscipit, et ipsam neque laudantium modi rem!",
-    imageUrl:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png",
-  },
-];
+import useCards from "../../hooks/use-cards";
+import Spinner from "../Spinner";
 
 export default function Game() {
+  const { cards, error, loading, shuffle, refreshPokemon } = useCards();
   const { chooseCard } = useMemoryCardGame();
 
   const BASE_DELAY = 750;
   const delay = BASE_DELAY + cards.length * 100;
 
-  const [isGameStarted, setIsGameStarted] = useState(true);
   const [isCardEnabled, setIsEnabled] = useState(false);
   const [cardsTransition, setCardsTransition] = useState<Transition>(
     Transition.ENTERING,
@@ -53,54 +28,70 @@ export default function Game() {
     }, 500);
   }
 
-  useEffect(() => {
-    if (!isGameStarted || cardsTransition !== Transition.ENTERING) return;
-    setCardsTransition(Transition.MOUNTED);
-  }, [isGameStarted, cardsTransition]);
+  function handleRefresh() {
+    (async () => {
+      await refreshPokemon();
+    })();
+  }
 
   useEffect(() => {
-    if (!isGameStarted || cardsTransition !== Transition.MOUNTED) return;
+    if (cardsTransition !== Transition.ENTERING) return;
+    setCardsTransition(Transition.MOUNTED);
+    shuffle();
+  }, [cardsTransition, shuffle]);
+
+  useEffect(() => {
+    if (cardsTransition !== Transition.MOUNTED) return;
     setTimeout(() => {
       setIsEnabled(true);
     }, delay);
-  }, [isGameStarted, cardsTransition, delay]);
+  }, [cardsTransition, delay]);
 
   useEffect(() => {
-    if (!isGameStarted || cardsTransition !== Transition.EXITING) return;
+    if (cardsTransition !== Transition.EXITING) return;
     setTimeout(() => {
       setCardsTransition(Transition.ENTERING);
     }, delay * 2);
-  }, [isGameStarted, cardsTransition, delay]);
+  }, [cardsTransition, delay]);
 
   return (
     <Container>
-      <CardContainer>
-        {cards.map((card, i) => (
-          <MemoryCard
-            key={i}
-            card={card}
-            onClick={() => handleClick(card)}
-            disabled={!isCardEnabled}
-            revealed={isCardEnabled}
-            style={
-              {
-                transform:
-                  cardsTransition === "entering"
-                    ? "translateX(-100dvw)"
-                    : cardsTransition === "mounted"
-                      ? "translateX(0dvw)"
-                      : "translateX(100dvw)",
-                transition:
-                  cardsTransition === "entering"
-                    ? "none"
-                    : `var(--card-transition)`,
-                "--index": i,
-                "--transition-delay": `${BASE_DELAY}ms`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-      </CardContainer>
+      {loading ? (
+        <Spinner />
+      ) : error || cards.length === 0 ? (
+        <Error>
+          <Message>{error || "Something went wrong"}</Message>
+          <Button onClick={handleRefresh}>Try again</Button>
+        </Error>
+      ) : (
+        <CardContainer>
+          {cards.map((card, i) => (
+            <MemoryCard
+              key={i}
+              card={card}
+              onClick={() => handleClick(card)}
+              disabled={!isCardEnabled}
+              revealed={isCardEnabled}
+              style={
+                {
+                  transform:
+                    cardsTransition === "entering"
+                      ? "translateX(-100dvw)"
+                      : cardsTransition === "mounted"
+                        ? "translateX(0dvw)"
+                        : "translateX(100dvw)",
+                  transition:
+                    cardsTransition === "entering"
+                      ? "none"
+                      : `var(--card-transition)`,
+                  "--index": i,
+                  "--transition-delay": `${BASE_DELAY}ms`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </CardContainer>
+      )}
     </Container>
   );
 }
@@ -123,4 +114,36 @@ const CardContainer = styled.section`
   overflow-y: auto;
   perspective: 3000px;
   transform-style: preserve-3d;
+`;
+
+const Error = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+`;
+
+const Message = styled.span`
+  color: var(--THEME_COLOR_04);
+  text-align: center;
+  font-size: 1.25rem;
+`;
+
+const Button = styled.button`
+  align-self: center;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--THEME_COLOR_04);
+  color: var(--THEME_COLOR_01);
+  transition: filter 500ms ease-out;
+  &:hover {
+    filter: brightness(1.8);
+    transition: filter 150ms ease-in;
+  }
 `;
